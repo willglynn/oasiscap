@@ -41,13 +41,11 @@ impl From<EmbeddedContent> for Vec<u8> {
     }
 }
 
-impl<'de> Deserialize<'de> for EmbeddedContent {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        // Deserialize a string, and promptly treat it as bytes
-        let string = String::deserialize(deserializer)?;
+impl TryFrom<String> for EmbeddedContent {
+    type Error = &'static str;
+
+    fn try_from(string: String) -> Result<Self, Self::Error> {
+        // Promptly treat it as bytes
         let mut bytes = string.into_bytes();
 
         // Keep everything that isn't whitespace
@@ -56,11 +54,23 @@ impl<'de> Deserialize<'de> for EmbeddedContent {
         // Decode the bytes in place, returning the decoded length
         let len = base64ct::Base64::decode_in_place(bytes.as_mut_slice())
             .map(|slice| slice.len())
-            .map_err(|e| D::Error::custom(format!("invalid base64 data: {}", e)))?;
+            .map_err(|_| "invalid base64 data")?;
 
         // Truncate to the decoded length
         bytes.truncate(len);
         Ok(Self(bytes))
+    }
+}
+
+impl<'de> Deserialize<'de> for EmbeddedContent {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        // Deserialize a string
+        String::deserialize(deserializer)?
+            .try_into()
+            .map_err(D::Error::custom)
     }
 }
 
@@ -80,5 +90,19 @@ impl Serialize for EmbeddedContent {
 
         // Serialize the string
         serializer.serialize_str(&str)
+    }
+}
+
+impl ToString for EmbeddedContent {
+    fn to_string(&self) -> String {
+        let bytes = self.0.as_slice();
+
+        // Make an output buffer of the right length
+        let len = base64ct::Base64::encoded_len(bytes);
+        let mut output = vec![0u8; len];
+
+        // Encode into it
+        let str = base64ct::Base64::encode(bytes, &mut output).unwrap();
+        str.into()
     }
 }

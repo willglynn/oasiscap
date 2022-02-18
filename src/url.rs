@@ -11,17 +11,21 @@ where
     D: Deserializer<'de>,
 {
     if let Some(string) = <Option<std::borrow::Cow<str>>>::deserialize(deserializer)? {
-        if let Ok(url) = url::Url::parse(&string) {
-            Ok(Some(url))
-        } else if let Some(url) = assume_url_is_missing_http(&string) {
-            Ok(Some(url))
-        } else if treat_url_as_missing(&string) {
-            Ok(None)
-        } else {
-            Err(D::Error::custom(format!("invalid URL: {:?}", string)))
-        }
+        parse(&string).map_err(|_| D::Error::custom(format!("invalid URL: {:?}", string)))
     } else {
         Ok(None)
+    }
+}
+
+pub(crate) fn parse(string: &str) -> Result<Option<url::Url>, ()> {
+    if let Ok(url) = url::Url::parse(string) {
+        Ok(Some(url))
+    } else if let Some(url) = assume_url_is_missing_http(string) {
+        Ok(Some(url))
+    } else if treat_url_as_missing(string) {
+        Ok(None)
+    } else {
+        Err(())
     }
 }
 

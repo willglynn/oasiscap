@@ -5,9 +5,6 @@
 use super::DateTime;
 use serde::{Deserialize, Serialize};
 
-mod id;
-pub use id::Id;
-
 mod status;
 pub use status::Status;
 
@@ -16,12 +13,6 @@ pub use scope::Scope;
 
 mod message_type;
 pub use message_type::MessageType;
-
-mod references;
-pub use references::References;
-
-mod language;
-pub use language::Language;
 
 mod category;
 pub use category::Category;
@@ -38,16 +29,11 @@ pub use certainty::Certainty;
 pub mod map;
 pub use map::Map;
 
-mod point;
-pub use point::Point;
-
-mod polygon;
-pub use polygon::Polygon;
-
-mod circle;
-
 use crate::delimited_items::Items;
-pub use circle::Circle;
+use crate::geo::{Circle, Polygon};
+use crate::id::Id;
+use crate::language::Language;
+use crate::references::References;
 
 /// A CAP v1.0 alert message.
 ///
@@ -384,7 +370,7 @@ pub struct Resource {
         rename = "{http://www.incident.com/cap/1.0}cap:digest",
         skip_serializing_if = "Option::is_none"
     )]
-    pub digest: Option<crate::Sha1Digest>,
+    pub digest: Option<crate::digest::Sha1>,
 }
 
 /// Geographical (and usually also geospatial) information describing the expected or actual
@@ -431,7 +417,7 @@ pub struct Area {
         rename = "{http://www.incident.com/cap/1.0}cap:altitude",
         skip_serializing_if = "Option::is_none"
     )]
-    pub altitude: Option<i64>,
+    pub altitude: Option<f64>,
 
     /// The maximum altitude of the affected area of the alert message, in feet above WGS 84 mean
     /// sea level.
@@ -439,7 +425,7 @@ pub struct Area {
         rename = "{http://www.incident.com/cap/1.0}cap:ceiling",
         skip_serializing_if = "Option::is_none"
     )]
-    pub ceiling: Option<i64>,
+    pub ceiling: Option<f64>,
 }
 
 #[cfg(test)]

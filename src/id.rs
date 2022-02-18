@@ -1,3 +1,5 @@
+//! Types for CAP identifiers.
+
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::ops::Deref;
@@ -9,7 +11,8 @@ use std::ops::Deref;
 /// # Example
 ///
 /// ```rust
-/// # use oasiscap::v1dot0::Id;
+/// use oasiscap::id::Id;
+///
 /// let id: Id = "foo".parse().unwrap();
 /// assert_eq!(id, "foo");
 /// assert_eq!("foo", id);
@@ -27,7 +30,7 @@ use std::ops::Deref;
 /// not.
 ///
 /// ```rust
-/// # use oasiscap::v1dot0::Id;
+/// # use oasiscap::id::Id;
 /// assert_eq!(" parsing-trims-whitespace ".parse::<Id>().unwrap(), "parsing-trims-whitespace");
 ///
 /// assert!(Id::new(" new-does-not ").is_err());
@@ -56,6 +59,14 @@ impl Id {
     }
 }
 
+impl TryFrom<String> for Id {
+    type Error = InvalidIdError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
 impl std::str::FromStr for Id {
     type Err = InvalidIdError;
 
@@ -64,10 +75,14 @@ impl std::str::FromStr for Id {
     }
 }
 
+/// The error returned when an `Id` would be invalid.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum InvalidIdError {
+    /// The provided string is empty
     Empty,
+    /// The provided string contains whitespace
     ContainsWhitespace,
+    /// The provided string contains a prohibited character
     ContainsProhibitedCharacter,
 }
 

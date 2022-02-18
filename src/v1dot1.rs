@@ -44,9 +44,7 @@
 use super::DateTime;
 use serde::{Deserialize, Serialize};
 
-pub use crate::v1dot0::{
-    Circle, Id, Language, MessageType, Point, Polygon, References, Scope, Severity, Urgency,
-};
+pub use crate::v1dot0::{MessageType, Scope, Severity, Urgency};
 
 mod status;
 pub use status::Status;
@@ -61,8 +59,13 @@ mod response_type;
 pub use response_type::ResponseType;
 
 mod map;
-use crate::delimited_items::Items;
 pub use map::Map;
+
+use crate::delimited_items::Items;
+use crate::geo::{Circle, Polygon};
+use crate::id::Id;
+use crate::language::Language;
+use crate::references::References;
 
 /// A CAP v1.1 alert message.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -484,7 +487,7 @@ pub struct Resource {
         rename = "{urn:oasis:names:tc:emergency:cap:1.1;https://docs.oasis-open.org/emergency/cap/v1.1/errata/approved/cap.xsd}cap:digest",
         skip_serializing_if = "Option::is_none"
     )]
-    pub digest: Option<crate::Sha1Digest>,
+    pub digest: Option<crate::digest::Sha1>,
 }
 
 impl From<crate::v1dot0::Resource> for Resource {
@@ -549,7 +552,7 @@ pub struct Area {
         rename = "{urn:oasis:names:tc:emergency:cap:1.1;https://docs.oasis-open.org/emergency/cap/v1.1/errata/approved/cap.xsd}cap:altitude",
         skip_serializing_if = "Option::is_none"
     )]
-    pub altitude: Option<i64>,
+    pub altitude: Option<f64>,
 
     /// The maximum altitude of the affected area of the alert message, in feet above WGS 84 mean
     /// sea level.
@@ -557,7 +560,7 @@ pub struct Area {
         rename = "{urn:oasis:names:tc:emergency:cap:1.1;https://docs.oasis-open.org/emergency/cap/v1.1/errata/approved/cap.xsd}cap:ceiling",
         skip_serializing_if = "Option::is_none"
     )]
-    pub ceiling: Option<i64>,
+    pub ceiling: Option<f64>,
 }
 
 impl From<crate::v1dot0::Area> for Area {

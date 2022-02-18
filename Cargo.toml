@@ -15,8 +15,11 @@ include = ["Cargo.toml", "README.md", "src", "benches"]
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 url = { version = "2.2", features = ["serde"] }
-xml_serde = "1.2.3"
+xml_serde = { path = "../xml-serde" }
 base64ct = "1.3"
+thiserror = "1.0"
+
+prost = { version = "0.9", optional = true }
 
 [dev-dependencies]
 pretty_env_logger = "0.4.0"

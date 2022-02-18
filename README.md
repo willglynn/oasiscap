@@ -65,7 +65,7 @@ in section 3:
 This crate implements those rules from section 3:
 
 ```rust
-use oasiscap::v1dot2::Polygon;
+use oasiscap::geo::Polygon;
 
 // 4 points, where the last point is the first point, makes a Polygon:
 assert!("1,1 2,2 3,3 1,1".parse::<Polygon>().is_ok());

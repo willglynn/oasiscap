@@ -74,7 +74,7 @@
 //! This crate implements those rules from section 3:
 //!
 //! ```rust
-//! use oasiscap::v1dot2::Polygon;
+//! use oasiscap::geo::Polygon;
 //!
 //! // 4 points, where the last point is the first point, makes a Polygon:
 //! assert!("1,1 2,2 3,3 1,1".parse::<Polygon>().is_ok());
@@ -135,18 +135,24 @@ use serde::{Deserialize, Serialize};
 mod datetime;
 pub use datetime::DateTime;
 
-mod digest;
-pub use digest::Sha1Digest;
+pub mod digest;
 
 mod embedded_data;
 pub use embedded_data::EmbeddedContent;
 
 pub mod delimited_items;
+pub mod geo;
+pub mod id;
+pub mod language;
 pub mod map;
+pub mod references;
 
 pub mod v1dot0;
 pub mod v1dot1;
 pub mod v1dot2;
+
+#[cfg(feature = "prost")]
+pub mod protobuf;
 
 pub(crate) mod url;
 
@@ -170,7 +176,7 @@ pub enum Alert {
 
 impl Alert {
     /// A unique identifier for this alert, assigned by the sender
-    pub fn identifier(&self) -> &crate::v1dot0::Id {
+    pub fn identifier(&self) -> &crate::id::Id {
         match self {
             Alert::V1dot0(alert) => &alert.identifier,
             Alert::V1dot1(alert) => &alert.identifier,
@@ -179,7 +185,7 @@ impl Alert {
     }
 
     /// A globally-unique identifier for the sender
-    pub fn sender(&self) -> &crate::v1dot0::Id {
+    pub fn sender(&self) -> &crate::id::Id {
         match self {
             Alert::V1dot0(alert) => &alert.sender,
             Alert::V1dot1(alert) => &alert.sender,

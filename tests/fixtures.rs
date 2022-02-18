@@ -72,7 +72,7 @@ fn google_paaq_4_mg5a94() {
             references: Some("wcatwc@noaa.gov,PAAQ-1-mg5a94,2013-01-05T09:01:16-00:00 wcatwc@noaa.gov,PAAQ-2-mg5a94,2013-01-05T09:30:16-00:00 wcatwc@noaa.gov,PAAQ-3-mg5a94,2013-01-05T10:17:31-00:00".parse().unwrap()),
             incidents: Some(vec!["mg5a94"].try_into().unwrap()),
             info: vec![oasiscap::v1dot2::Info{
-                language: Language::default(),
+                language: Default::default(),
                 categories: vec![oasiscap::v1dot2::Category::Geo],
                 event: "Tsunami Cancellation".into(),
                 response_type: vec![oasiscap::v1dot2::ResponseType::None],

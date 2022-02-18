@@ -1,4 +1,5 @@
-use super::{DateTime, Id};
+//! Types for CAP references.
+use super::{id::Id, DateTime};
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::ops::Deref;
@@ -8,7 +9,8 @@ use std::ops::Deref;
 /// # Example
 ///
 /// ```
-/// # use oasiscap::v1dot0::References;
+/// use oasiscap::references::References;
+///
 /// // References converts directly to/from Vec<References>
 /// let references = References::from(vec![]);
 /// assert_eq!(references.len(), 0);
@@ -105,8 +107,11 @@ impl IntoIterator for References {
 /// An alert reference
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Reference {
+    /// The `sender` field of the referenced `Alert`.
     pub sender: Id,
+    /// The `identifier` field of the referenced `Alert`.
     pub identifier: Id,
+    /// The `sent` field of the referenced `Alert`.
     pub sent: DateTime,
 }
 
@@ -116,31 +121,56 @@ impl std::fmt::Display for Reference {
     }
 }
 
+/// The error returned when a `Reference` would be invalid.
+#[derive(thiserror::Error, Debug)]
+pub enum ReferenceError {
+    /// Invalid format
+    #[error("invalid format: {0:?}")]
+    Format(String),
+
+    /// Invalid sender
+    #[error("invalid sender: {0}")]
+    Sender(crate::id::InvalidIdError),
+
+    /// Invalid identifier
+    #[error("invalid identifier: {0}")]
+    Identifier(crate::id::InvalidIdError),
+
+    /// Invalid sent
+    #[error("invalid sent timestamp: {0}")]
+    Sent(chrono::ParseError),
+}
+
+impl std::str::FromStr for Reference {
+    type Err = ReferenceError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match {
+            let mut i = s.split(',');
+            (
+                i.next().map(|v| Id::new(v).map_err(ReferenceError::Sender)),
+                i.next()
+                    .map(|v| Id::new(v).map_err(ReferenceError::Identifier)),
+                i.next().map(|v| v.parse().map_err(ReferenceError::Sent)),
+                i.next(),
+            )
+        } {
+            (Some(sender), Some(identifier), Some(sent), None) => Ok(Reference {
+                sender: sender?,
+                identifier: identifier?,
+                sent: sent?,
+            }),
+            _ => Err(ReferenceError::Format(s.into())),
+        }
+    }
+}
+
 impl std::str::FromStr for References {
-    type Err = &'static str;
+    type Err = ReferenceError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.split_whitespace()
-            .map(|chunk| {
-                match {
-                    let mut i = chunk.split(',');
-                    (
-                        i.next().map(Id::new),
-                        i.next().map(Id::new),
-                        i.next().map(DateTime::from_str),
-                        i.next(),
-                    )
-                } {
-                    (Some(Ok(sender)), Some(Ok(identifier)), Some(Ok(sent)), None) => {
-                        Ok(Reference {
-                            sender,
-                            identifier,
-                            sent,
-                        })
-                    }
-                    _ => Err("invalid reference"),
-                }
-            })
+            .map(|reference| reference.parse())
             .collect::<Result<Vec<_>, _>>()
             .map(Self)
     }

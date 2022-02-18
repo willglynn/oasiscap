@@ -1,3 +1,5 @@
+//! Types for representing languages.
+
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::str::FromStr;
@@ -26,7 +28,7 @@ use std::str::FromStr;
 /// # Example
 ///
 /// ```
-/// # use oasiscap::v1dot0::Language;
+/// # use oasiscap::language::Language;
 /// #
 /// // Default is Option::None
 /// let default = Language::default();
@@ -62,7 +64,7 @@ impl Language {
     /// # Example
     ///
     /// ```
-    /// # use oasiscap::v1dot0::Language;
+    /// # use oasiscap::language::Language;
     /// // Accepts strings, or absence of strings
     /// assert!(Language::new("en-GB".to_string()).is_ok());
     /// assert!(Language::new(None).is_ok());
@@ -77,7 +79,7 @@ impl Language {
     /// // Accepts strings which do fit the pattern, even if they're not real languages
     /// assert!(Language::new("artoo-D2".to_string()).is_ok());
     /// ```
-    pub fn new<S: Into<Option<String>>>(value: S) -> Result<Self, impl std::error::Error> {
+    pub fn new<S: Into<Option<String>>>(value: S) -> Result<Self, InvalidLanguageError> {
         if let Some(string) = value.into() {
             string.try_into()
         } else {
@@ -90,7 +92,7 @@ impl Language {
     /// # Example
     ///
     /// ```
-    /// # use oasiscap::v1dot0::Language;
+    /// # use oasiscap::language::Language;
     /// assert_eq!(Language::default().into_inner(), None);
     /// assert_eq!(Language::new(String::from("foo")).unwrap().into_inner(), Some(String::from("foo")));
     ///
@@ -106,7 +108,7 @@ impl Language {
     /// # Example
     ///
     /// ```
-    /// # use oasiscap::v1dot0::Language;
+    /// # use oasiscap::language::Language;
     /// assert_eq!(Language::default().as_str(), "en-US");
     /// assert_eq!(Language::new(String::from("foo")).unwrap().as_str(), "foo");
     /// ```
@@ -119,7 +121,7 @@ impl Language {
     /// # Example
     ///
     /// ```
-    /// # use oasiscap::v1dot0::Language;
+    /// # use oasiscap::language::Language;
     /// assert_eq!(Language::default().as_option_str(), None);
     /// assert_eq!(Language::new(String::from("foo")).unwrap().as_option_str(), Some("foo"));
     /// ```
@@ -186,7 +188,7 @@ impl TryFrom<String> for Language {
                 chunk.chars().all(|c| c.is_ascii_alphanumeric())
             };
             if !all_valid_chars || chunk.is_empty() || chunk.len() > 8 {
-                return Err(InvalidLanguageError);
+                return Err(InvalidLanguageError(value));
             }
         }
 
@@ -194,12 +196,13 @@ impl TryFrom<String> for Language {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct InvalidLanguageError;
+/// The error returned when a `Language` would be invalid.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct InvalidLanguageError(String);
 
 impl std::fmt::Display for InvalidLanguageError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str("invalid language value")
+        write!(f, "invalid language value: {:?}", self.0)
     }
 }
 impl std::error::Error for InvalidLanguageError {}
