@@ -10,7 +10,7 @@ pub(crate) fn deserialize<'de, D>(deserializer: D) -> Result<Option<url::Url>, D
 where
     D: Deserializer<'de>,
 {
-    if let Some(string) = <Option<String>>::deserialize(deserializer)? {
+    if let Some(string) = <Option<std::borrow::Cow<str>>>::deserialize(deserializer)? {
         if let Ok(url) = url::Url::parse(&string) {
             Ok(Some(url))
         } else if let Some(url) = assume_url_is_missing_http(&string) {

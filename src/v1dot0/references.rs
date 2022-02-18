@@ -2,7 +2,6 @@ use super::{DateTime, Id};
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::ops::Deref;
-use std::str::FromStr;
 
 /// A list of references to other alerts.
 ///
@@ -171,7 +170,7 @@ impl<'de> Deserialize<'de> for References {
     where
         D: Deserializer<'de>,
     {
-        let references = String::deserialize(deserializer)?;
-        References::from_str(&references).map_err(D::Error::custom)
+        let str = <std::borrow::Cow<str>>::deserialize(deserializer)?;
+        str.parse().map_err(D::Error::custom)
     }
 }

@@ -171,8 +171,8 @@ impl<'de> Deserialize<'de> for DateTime {
     where
         D: Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
-        let dt = s.parse().map_err(serde::de::Error::custom)?;
+        let str = <std::borrow::Cow<str>>::deserialize(deserializer)?;
+        let dt = str.parse().map_err(serde::de::Error::custom)?;
         Ok(Self(dt))
     }
 }

@@ -75,7 +75,7 @@ impl<'de> Deserialize<'de> for Circle {
     where
         D: Deserializer<'de>,
     {
-        let str = String::deserialize(deserializer)?;
+        let str = <std::borrow::Cow<str>>::deserialize(deserializer)?;
         str.parse().map_err(D::Error::custom)
     }
 }

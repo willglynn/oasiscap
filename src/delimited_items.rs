@@ -282,8 +282,8 @@ impl<'de> Deserialize<'de> for Items {
     where
         D: Deserializer<'de>,
     {
-        let string = String::deserialize(deserializer)?;
-        string.parse().map_err(D::Error::custom)
+        let str = <std::borrow::Cow<str>>::deserialize(deserializer)?;
+        str.parse().map_err(D::Error::custom)
     }
 }
 
@@ -400,8 +400,8 @@ impl<'de> Deserialize<'de> for Item {
     where
         D: Deserializer<'de>,
     {
-        let string = String::deserialize(deserializer)?;
-        string.try_into().map_err(D::Error::custom)
+        let str = <std::borrow::Cow<str>>::deserialize(deserializer)?;
+        str.as_ref().try_into().map_err(D::Error::custom)
     }
 }
 

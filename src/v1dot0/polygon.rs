@@ -64,7 +64,7 @@ impl Polygon {
     where
         D: Deserializer<'de>,
     {
-        let strs = <Vec<String>>::deserialize(deserializer)?;
+        let strs = <Vec<std::borrow::Cow<str>>>::deserialize(deserializer)?;
         strs.into_iter()
             .filter(|s| !s.is_empty())
             .map(|s| Polygon::from_str(&s))
@@ -100,7 +100,7 @@ impl<'de> Deserialize<'de> for Polygon {
     where
         D: Deserializer<'de>,
     {
-        let str = String::deserialize(deserializer)?;
+        let str = <std::borrow::Cow<str>>::deserialize(deserializer)?;
         str.parse().map_err(D::Error::custom)
     }
 }
