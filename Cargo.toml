@@ -7,7 +7,7 @@ repository = "https://github.com/willglynn/oasiscap"
 license = "MIT OR Apache-2.0"
 keywords = ["cap", "common alerting protocol", "alerts", "oasis", "public safety"]
 categories = ["parser-implementations"]
-include = ["Cargo.toml", "README.md", "src"]
+include = ["Cargo.toml", "README.md", "src", "benches"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
