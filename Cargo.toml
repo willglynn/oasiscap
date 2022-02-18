@@ -5,7 +5,7 @@ edition = "2021"
 description = "Types for the OASIS Common Alerting Protocol (CAP)"
 repository = "https://github.com/willglynn/oasiscap"
 license = "MIT OR Apache-2.0"
-keywords = ["cap", "common alerting protocol", "alerts", "oasis", "public safety"]
+keywords = ["cap", "xml", "alerts", "oasis", "public-safety"]
 categories = ["parser-implementations"]
 include = ["Cargo.toml", "README.md", "src", "benches"]
 
