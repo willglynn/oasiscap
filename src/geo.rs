@@ -57,11 +57,11 @@ impl TryFrom<(f64, f64)> for Point {
 #[derive(thiserror::Error, Debug)]
 pub enum InvalidPointError {
     /// The point string could not be parsed
-    #[error("point string could not be parsed: {0:?}")]
-    UnparseableString(String),
+    #[error("bad format: {0:?}")]
+    BadFormat(String),
 
-    /// The point coordinates were out of range
-    #[error("point coordinates were out of range: {latitude} latitude, {longitude} longitude")]
+    /// The coordinates are out of range
+    #[error("coordinates out of range: {latitude} latitude, {longitude} longitude")]
     CoordinatesOutOfRange {
         /// The specified latitude
         latitude: f64,
@@ -79,7 +79,7 @@ impl FromStr for Point {
             (i.next(), i.next(), i.next())
         } {
             (Some(Ok(latitude)), Some(Ok(longitude)), None) => Point::new(latitude, longitude),
-            _ => Err(InvalidPointError::UnparseableString(s.into())),
+            _ => Err(InvalidPointError::BadFormat(s.into())),
         }
     }
 }
@@ -219,7 +219,7 @@ impl TryFrom<Vec<Point>> for Polygon {
 #[derive(thiserror::Error, Debug)]
 pub enum InvalidPolygonError {
     /// The polygon contained too few points
-    #[error("polygon contained too few points: got {0} vs 4 minimum")]
+    #[error("polygon contains too few points: got {0} vs 4 minimum")]
     TooFewPoints(
         /// The specified number of points
         usize,
@@ -235,7 +235,7 @@ pub enum InvalidPolygonError {
     ),
 
     /// The polygon contained an invalid point
-    #[error("polygon contained invalid point: {0}")]
+    #[error("polygon contains invalid point: {0}")]
     InvalidPoint(#[from] InvalidPointError),
 }
 

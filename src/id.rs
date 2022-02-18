@@ -50,9 +50,9 @@ impl Id {
         if string.is_empty() {
             Err(InvalidIdError::Empty)
         } else if string.chars().any(char::is_whitespace) {
-            Err(InvalidIdError::ContainsWhitespace)
-        } else if string.contains(',') || string.contains('<') || string.contains('&') {
-            Err(InvalidIdError::ContainsProhibitedCharacter)
+            Err(InvalidIdError::ContainsWhitespace(string))
+        } else if let Some(c) = string.chars().find(|c| matches!(*c, ',' | '<' | '&')) {
+            Err(InvalidIdError::ContainsProhibitedCharacter(c, string))
         } else {
             Ok(Self(string))
         }
@@ -76,29 +76,18 @@ impl std::str::FromStr for Id {
 }
 
 /// The error returned when an `Id` would be invalid.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(thiserror::Error, Debug)]
 pub enum InvalidIdError {
     /// The provided string is empty
+    #[error("ID is empty")]
     Empty,
-    /// The provided string contains whitespace
-    ContainsWhitespace,
-    /// The provided string contains a prohibited character
-    ContainsProhibitedCharacter,
+    /// Contains whitespace
+    #[error("ID contains whitespace: {0:?}")]
+    ContainsWhitespace(String),
+    /// Contains prohibited character
+    #[error("ID contains prohibited character {0:?}: {0:?}")]
+    ContainsProhibitedCharacter(char, String),
 }
-
-impl std::fmt::Display for InvalidIdError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str(match self {
-            InvalidIdError::Empty => "ID must not be empty",
-            InvalidIdError::ContainsWhitespace => "ID must not contain whitespace",
-            InvalidIdError::ContainsProhibitedCharacter => {
-                "ID must not contain prohibited characters"
-            }
-        })
-    }
-}
-
-impl std::error::Error for InvalidIdError {}
 
 impl std::fmt::Display for Id {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
