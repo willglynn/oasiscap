@@ -51,6 +51,7 @@ explains:
 > An XML 1.0 document is a conforming CAP V1.2 Message if and only if:
 >
 > a) it is valid according to [the schema] and
+> 
 > b) the content of its elements and the values of its attributes meet all the additional
 >    mandatory requirements specified in Section 3.
 
