@@ -18,7 +18,7 @@ fn parse_all_fixtures() {
                     Err(e) => String::from_utf8_lossy(e.as_bytes()).into_owned(),
                 };
                 match string.parse::<oasiscap::Alert>() {
-                    Ok(alert) => test_roundtrip(name, alert),
+                    Ok(alert) => test_alert(name, alert),
                     Err(e) => panic!("error parsing {}: {}", name, e),
                 };
             }
@@ -26,7 +26,41 @@ fn parse_all_fixtures() {
     }
 }
 
-fn test_roundtrip(name: &str, alert: oasiscap::Alert) {
+fn test_alert(name: &str, alert: oasiscap::Alert) {
+    test_xml_roundtrip(name, &alert);
+    test_proto(name, &alert);
+
+    let upgraded_name = format!("upgraded {}", name);
+    let upgraded = oasiscap::Alert::from(alert.into_latest());
+    test_proto(&upgraded_name, &upgraded);
+    test_xml_roundtrip(&upgraded_name, &upgraded);
+}
+
+#[cfg(not(feature = "prost"))]
+fn test_proto(name: &str, alert: &oasiscap::v1dot2::Alert) {
+    // no-op
+}
+
+#[cfg(feature = "prost")]
+fn test_proto(name: &str, alert: &oasiscap::Alert) {
+    use prost::Message;
+
+    // convert to a protobuf::Alert
+    let proto: oasiscap::protobuf::Alert = alert.clone().into();
+
+    // roundtrip through bytes
+    let bytes = proto.encode_length_delimited_to_vec();
+    let reproto = oasiscap::protobuf::Alert::decode_length_delimited(bytes.as_slice())
+        .expect("parse protobuf");
+    let roundtrip = oasiscap::Alert::try_from(reproto).expect("from proto");
+    assert_eq!(
+        &roundtrip, alert,
+        "mismatch roundtripping {} through protobuf",
+        name
+    );
+}
+
+fn test_xml_roundtrip(name: &str, alert: &oasiscap::Alert) {
     let xml = alert.to_string();
     let roundtrip: oasiscap::Alert = xml
         .parse()
@@ -35,11 +69,11 @@ fn test_roundtrip(name: &str, alert: oasiscap::Alert) {
             e
         })
         .unwrap();
-    println!("<!-- {} -->\n{}\n\n", name, &xml);
+    //println!("<!-- {} -->\n{}\n\n", name, &xml);
     assert_eq!(
-        &alert, &roundtrip,
-        "{}: parsed {:#?}, roundtripped {:#?}",
-        name, &alert, &roundtrip
+        alert, &roundtrip,
+        "mismatch roundtripping {} through XML",
+        name
     );
 }
 

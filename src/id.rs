@@ -67,6 +67,12 @@ impl TryFrom<String> for Id {
     }
 }
 
+impl From<Id> for String {
+    fn from(value: Id) -> Self {
+        value.0
+    }
+}
+
 impl std::str::FromStr for Id {
     type Err = InvalidIdError;
 

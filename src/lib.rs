@@ -26,7 +26,7 @@
 //!#     <web>http://www.dhs.gov/dhspublic/display?theme=29</web>
 //!   </info>
 //! </alert>
-//! "#.parse().expect("parse CAP");
+//! "#.parse()?;
 //!
 //! // Handle CAP alerts of various versions
 //! match &alert {
@@ -40,6 +40,7 @@
 //!
 //! // Convert back to XML again
 //! let alert_xml = alert.to_string();
+//! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 //!
 //! # Conformance
@@ -121,9 +122,48 @@
 //!
 //! Clone the repository and run `cargo bench` to see how it performs in your environment.
 //!
+//! # Protocol Buffers
+//!
+//! Google Public Alerts defines a [CAP Protocol Buffers representation], under the Java package
+//! name `com.google.publicalerts.cap`. This crate optionally provides `oasiscap::protobuf` when
+//! built with the `prost` feature. `oasiscap::protobuf` data types exactly correspond to these
+//! Protocol Buffers message types.
+//!
+//! The Protocol Buffers representations are more permissive than the usual parsed `oasiscap` types:
+//! timestamps can lack time zones, polygons don't have to be closed, required fields can be
+//! missing, etc. This crate therefore also provides conversions:
+//!
+//! ```rust
+//! # let alert: oasiscap::Alert = include_str!("../fixtures/v1dot0_appendix_adot2.xml").parse().unwrap();
+//! # let alert = oasiscap::protobuf::Alert::from(alert);
+//! # let protobuf_encoded_bytes = prost::Message::encode_to_vec(&alert);
+//! // Decoding from protobuf bytes can fail:
+//! let protobuf_alert: oasiscap::protobuf::Alert = prost::Message::decode(
+//!     protobuf_encoded_bytes.as_slice()
+//! )?;
+//!
+//! // Converting to an `oasiscap::Alert` can fail:
+//! let alert: oasiscap::Alert = protobuf_alert.try_into()?;
+//!
+//! // Converting back to an `oasiscap::protobuf::Alert` cannot fail:
+//! let alert: oasiscap::protobuf::Alert = alert.into();
+//!
+//! // Nor can encoding protobuf bytes:
+//! let protobuf_encoded_bytes = prost::Message::encode_to_vec(&alert);
+//! # Ok::<(), Box<dyn std::error::Error>>(())
+//! ```
+//!
+//! Protocol Buffers offer substantially better performance than XML:
+//!
+//! * `&[u8]` to `oasiscap::protobuf::Alert`: 2µs
+//! * `oasiscap::protobuf::Alert` to `oasiscap::Alert`: 2µs
+//! * `oasiscap::Alert` to `oasiscap::protobuf::Alert`: 1µs
+//! * `oasiscap::protobuf::Alert` to `Vec<u8>`: 0.3µs
+//!
 //! [Common Alerting Protocol]: https://en.wikipedia.org/wiki/Common_Alerting_Protocol
 //! [xml_serde]: https://crates.io/crates/xml_serde
 //! [the schema]: http://docs.oasis-open.org/emergency/cap/v1.2/CAP-v1.2.xsd
+//! [CAP Protocol Buffers representation]: https://github.com/google/cap-library/blob/master/proto/cap.proto
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
@@ -172,6 +212,24 @@ pub enum Alert {
     /// A CAP v1.2 alert message
     #[serde(rename = "{urn:oasis:names:tc:emergency:cap:1.2;}cap:alert")]
     V1dot2(v1dot2::Alert),
+}
+
+impl From<v1dot0::Alert> for Alert {
+    fn from(v: v1dot0::Alert) -> Self {
+        Self::V1dot0(v)
+    }
+}
+
+impl From<v1dot1::Alert> for Alert {
+    fn from(v: v1dot1::Alert) -> Self {
+        Self::V1dot1(v)
+    }
+}
+
+impl From<v1dot2::Alert> for Alert {
+    fn from(v: v1dot2::Alert) -> Self {
+        Self::V1dot2(v)
+    }
 }
 
 impl Alert {
