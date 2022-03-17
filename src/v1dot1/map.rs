@@ -22,9 +22,9 @@ impl From<(String, String)> for Entry {
     }
 }
 
-impl Into<(String, String)> for Entry {
-    fn into(self) -> (String, String) {
-        (self.value_name, self.value)
+impl From<Entry> for (String, String) {
+    fn from(e: Entry) -> Self {
+        (e.value_name, e.value)
     }
 }
 

@@ -89,7 +89,7 @@ impl Serialize for EmbeddedContent {
         let str = base64ct::Base64::encode(bytes, &mut output).unwrap();
 
         // Serialize the string
-        serializer.serialize_str(&str)
+        serializer.serialize_str(str)
     }
 }
 

@@ -139,17 +139,28 @@ impl FromStr for Point {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Polygon(Vec<Point>);
 
-impl Polygon {
-    /// Returns an iterator over the points in this `Polygon`.
-    #[must_use]
-    pub fn iter(&self) -> impl Iterator<Item = &Point> {
+impl IntoIterator for Polygon {
+    type Item = Point;
+    type IntoIter = std::vec::IntoIter<Point>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a Polygon {
+    type Item = &'a Point;
+    type IntoIter = std::slice::Iter<'a, Point>;
+
+    fn into_iter(self) -> Self::IntoIter {
         self.0.iter()
     }
+}
 
-    /// Returns an iterator which moves points out of this `Polygon`.
-    #[must_use]
-    pub fn into_iter(self) -> impl Iterator<Item = Point> {
-        self.0.into_iter()
+impl Polygon {
+    /// Returns an iterator over the points in this `Polygon`.
+    pub fn iter(&self) -> impl Iterator<Item = &Point> {
+        self.0.iter()
     }
 
     // Deserialize, but treat `<polygon></polygon>` the same as ``.

@@ -89,7 +89,7 @@ impl FromStr for Sha1 {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
         if s.len() != 40 {
-            return Err(Sha1ParseError::Length(s.len()))?;
+            return Err(Sha1ParseError::Length(s.len()));
         }
 
         let mut bytes = [0u8; 20];
