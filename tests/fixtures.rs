@@ -37,7 +37,7 @@ fn test_alert(name: &str, alert: oasiscap::Alert) {
 }
 
 #[cfg(not(feature = "prost"))]
-fn test_proto(name: &str, alert: &oasiscap::v1dot2::Alert) {
+fn test_proto(_name: &str, _alert: &oasiscap::Alert) {
     // no-op
 }
 

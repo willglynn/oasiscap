@@ -134,6 +134,8 @@
 //! missing, etc. This crate therefore also provides conversions:
 //!
 //! ```rust
+//! # #[cfg(feature = "prost")]
+//! # fn test() -> Result<(), Box<dyn std::error::Error>> {
 //! # let alert: oasiscap::Alert = include_str!("../fixtures/v1dot0_appendix_adot2.xml").parse().unwrap();
 //! # let alert = oasiscap::protobuf::Alert::from(alert);
 //! # let protobuf_encoded_bytes = prost::Message::encode_to_vec(&alert);
@@ -150,7 +152,9 @@
 //!
 //! // Nor can encoding protobuf bytes:
 //! let protobuf_encoded_bytes = prost::Message::encode_to_vec(&alert);
-//! # Ok::<(), Box<dyn std::error::Error>>(())
+//! # Ok(()) }
+//! # #[cfg(not(feature = "prost"))] fn test() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
+//! # test().unwrap()
 //! ```
 //!
 //! Protocol Buffers offer substantially better performance than XML:
