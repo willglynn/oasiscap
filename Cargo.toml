@@ -1,6 +1,6 @@
 [package]
 name = "oasiscap"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Types for the OASIS Common Alerting Protocol (CAP)"
 repository = "https://github.com/willglynn/oasiscap"
